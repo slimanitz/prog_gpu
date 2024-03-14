@@ -22,13 +22,17 @@ __device__ float gaussian(float x, float sigma)
     return (1.0 / (2 * PI * sigma * sigma)) * exp(-(x * x) / (2 * sigma * sigma));
 }
 
+/* Fonction de calcul des nouvelles valeurs des pixel en appliquant le filtre gaussien
+    Paramètres : paramètres de l'image (largeur, hauteur, nombre de canaux de couleur) + sigma pour l'écart type du noyau gaussien
+    Les threads calculent la valeur d'un pixel de l'image de sortie après l'application du filtre gaussien.
+*/
 __global__ void applyGaussianBlur(const uint8_t *inputPixels, uint8_t *outputPixels, int width, int height, int channels, float sigma)
 {
     int radius = (int)(sigma * 3);
     int size = 2 * radius + 1;
     float kernel[31];
 
-    // Construire le noyau de convolution gaussien
+    // construction du noyau de convo gaussien
     float sum = 0;
     for (int i = 0; i < size; i++)
     {
@@ -36,15 +40,22 @@ __global__ void applyGaussianBlur(const uint8_t *inputPixels, uint8_t *outputPix
         sum += kernel[i];
     }
 
-    // Normaliser le noyau
+    // Nomalisation du noyau
+    /*Le masque resemble à :
+        { kernel[0] / sum, kernel[0] / sum, kernel[0] / sum },
+        { kernel[1] / sum, kernel[1] / sum, kernel[1] / sum },
+        { kernel[2] / sum, kernel[2] / sum, kernel[2] / sum }
+    */  
     for (int i = 0; i < size; i++)
     {
         kernel[i] /= sum;
     }
 
+    // x et y => pixel de l'image
+    // associe à chaque thread un pixel donnée
     int x = blockIdx.x * blockDim.x + threadIdx.x;
     int y = blockIdx.y * blockDim.y + threadIdx.y;
-    if (x < width && y < height)
+    if (x < width && y < height) // vérifie que les variables x et y ne depasse pas les limites de la taille de l'image
     {
         for (int c = 0; c < channels; c++)
         {
