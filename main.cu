@@ -21,7 +21,7 @@ __global__ void applyGaussianBlur(const uint8_t *inputPixels, uint8_t *outputPix
 {
     int radius = (int)(sigma * 3);
     int size = 2 * radius + 1;
-    float kernel[31];
+    float kernel[181];
 
     // Construire le noyau de convolution gaussien
     float sum = 0;
