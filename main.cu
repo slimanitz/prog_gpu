@@ -80,7 +80,7 @@ int main()
         return 1;
     }
 
-    float sigma = 10.0; // L'écart type du noyau gaussien
+    float sigma = 30.0; // L'écart type du noyau gaussien
 
     uint8_t *d_inputPixels, *d_outputPixels;
     cudaError_t cudaStatus;
@@ -127,12 +127,6 @@ int main()
     cudaMemcpy(outputPixels, d_outputPixels, width * height * channels * sizeof(uint8_t), cudaMemcpyDeviceToHost);
 
     // Print some output pixel values for verification
-    std::cout << "Output pixels: ";
-    for (int i = 0; i < 10; ++i)
-    {
-        std::cout << (int)outputPixels[i] << " ";
-    }
-    std::cout << std::endl;
 
     // Enregistrer l'image floutée
     stbi_write_bmp("output.bmp", width, height, channels, outputPixels);
@@ -143,7 +137,7 @@ int main()
     cudaFree(d_inputPixels);
     cudaFree(d_outputPixels);
 
-    printf("Image floutée enregistrée sous : output_image.bmp\n");
+    printf("Image floutée enregistrée sous : output.bmp\n");
 
     return 0;
 }
