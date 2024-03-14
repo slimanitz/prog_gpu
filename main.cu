@@ -57,8 +57,10 @@ __global__ void applyGaussianBlur(const uint8_t *inputPixels, uint8_t *outputPix
     int y = blockIdx.y * blockDim.y + threadIdx.y;
     if (x < width && y < height) // vérifie que les variables x et y ne depasse pas les limites de la taille de l'image
     {
+        // Appliquer le noyau de convolution on commence par passer sur chacun des canaux sachant que chaque canal est un tableau de pixels car c est une image RGB
         for (int c = 0; c < channels; c++)
         {
+            // Initialiser la nouvelle valeur du pixel
             float newValue = 0.0;
             for (int ky = -radius; ky <= radius; ky++)
             {
