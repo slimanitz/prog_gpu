@@ -4,14 +4,19 @@
 #include <stdint.h>
 #include <iostream>
 
+// On importe les fichiers pour utiliser un floutage gaussien
 #define STB_IMAGE_IMPLEMENTATION
 #include "./stb_image.h"
-
 #define STB_IMAGE_WRITE_IMPLEMENTATION
 #include "./stb_image_write.h"
 
 #define PI 3.14159265358979323846
 
+/*Fonction executable sur GPU
+    Permet de calculer la valeur du noyau gaussien, 
+    plus la valeur de l'entrée `sigma` sera élevé et plus l'image sera flouter
+    plus cette valeur est élevée, plus le temps de calcul sera long
+*/
 __device__ float gaussian(float x, float sigma)
 {
     return (1.0 / (2 * PI * sigma * sigma)) * exp(-(x * x) / (2 * sigma * sigma));
