@@ -80,7 +80,7 @@ int main()
         return 1;
     }
 
-    float sigma = 5.0; // L'écart type du noyau gaussien
+    float sigma = 10.0; // L'écart type du noyau gaussien
 
     uint8_t *d_inputPixels, *d_outputPixels;
     cudaError_t cudaStatus;
