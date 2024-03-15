@@ -21,7 +21,7 @@ __global__ void applyGaussianBlur(const uint8_t *inputPixels, uint8_t *outputPix
 {
     int radius = (int)(sigma * 3);
     int size = 2 * radius + 1;
-    float kernel[31];
+    float kernel[61];
 
     // Construire le noyau de convolution gaussien
     float sum = 0;
@@ -82,7 +82,7 @@ int main()
         return 1;
     }
 
-    float sigma = 5.0; // L'écart type du noyau gaussien
+    float sigma = 10.0; // L'écart type du noyau gaussien
 
     uint8_t *d_inputPixels, *d_outputPixels;
     cudaError_t cudaStatus;
