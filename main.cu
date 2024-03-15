@@ -82,7 +82,7 @@ __global__ void applyGaussianBlur(const uint8_t *inputPixels, uint8_t *outputPix
 
 int main()
 {
-    /*Chargement de l'image ("input.bmp") 
+    /*Chargement de l'image ("input.bmp") avec allocation mémoire CPU
         +stocke ses pixels dans un tab : "inputPixels"
         +déclaration du tab des nouvelles valeur après filtre : "outpuPixels"
     */
@@ -107,15 +107,14 @@ int main()
     uint8_t *d_inputPixels, *d_outputPixels; //init des var alloué sur cuda pour calculs des pixels; variable d'entrée + variable de sortie
     cudaError_t cudaStatus;
 
-    //tab d_inputPixels => pixels de l'image d'entrée (dans cuda)
-    cudaStatus = cudaMalloc((void **)&d_inputPixels, width * height * channels * sizeof(uint8_t));
+    /*Allocation mémoire sur le GPU*/
+    cudaStatus = cudaMalloc((void **)&d_inputPixels, width * height * channels * sizeof(uint8_t)); //tab d_inputPixels => pixels de l'image d'entrée (dans cuda)
     if (cudaStatus != cudaSuccess)
     {
         fprintf(stderr, "cudaMalloc failed: %s\n", cudaGetErrorString(cudaStatus));
         return 1;
     }
-    //tab d_outputPixels => pixels de l'image en sortie (de cuda)
-    cudaStatus = cudaMalloc((void **)&d_outputPixels, width * height * channels * sizeof(uint8_t));
+    cudaStatus = cudaMalloc((void **)&d_outputPixels, width * height * channels * sizeof(uint8_t)); //tab d_outputPixels => pixels de l'image en sortie (de cuda)
     if (cudaStatus != cudaSuccess)
     {
         fprintf(stderr, "cudaMalloc failed: %s\n", cudaGetErrorString(cudaStatus));
@@ -123,6 +122,7 @@ int main()
         return 1;
     }
 
+    /*transfert data CPU vers GPU*/
     cudaStatus = cudaMemcpy(d_inputPixels, inputPixels, width * height * channels * sizeof(uint8_t), cudaMemcpyHostToDevice);
     if (cudaStatus != cudaSuccess)
     {
@@ -132,10 +132,11 @@ int main()
         return 1;
     }
 
-    dim3 threadsPerBlock(16, 16);
-    dim3 numBlocks((width + threadsPerBlock.x - 1) / threadsPerBlock.x, (height + threadsPerBlock.y - 1) / threadsPerBlock.y);
+    /*Calcul de la configuration des blocs et des grilles*/ 
+    dim3 threadsPerBlock(16, 16); //nb de thread par bloc
+    dim3 numBlocks((width + threadsPerBlock.x - 1) / threadsPerBlock.x, (height + threadsPerBlock.y - 1) / threadsPerBlock.y); //taille des grilles
 
-    // Appliquer le flou gaussien
+    // Appliquer le flou gaussien (appel du kernel cuda)
     applyGaussianBlur<<<numBlocks, threadsPerBlock>>>(d_inputPixels, d_outputPixels, width, height, channels, sigma);
 
     cudaStatus = cudaGetLastError();
@@ -147,14 +148,13 @@ int main()
         return 1;
     }
 
+    // Copie du résultat du GPU vers le CPU
     cudaMemcpy(outputPixels, d_outputPixels, width * height * channels * sizeof(uint8_t), cudaMemcpyDeviceToHost);
-
-    // Print some output pixel values for verification
 
     // enregistrement de l'image floutée
     stbi_write_bmp("output.bmp", width, height, channels, outputPixels);
 
-    // Libérer la mémoire
+    // Libérer la mémoire alloué (CPU et GPU)
     stbi_image_free(inputPixels);
     free(outputPixels);
     cudaFree(d_inputPixels);
