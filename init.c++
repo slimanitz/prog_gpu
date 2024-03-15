@@ -12,13 +12,19 @@
 
 #define PI 3.14159265358979323846
 
-// Fonction pour obtenir la valeur gaussienne pour un point donné
+/*Fonction pour calculer la valeur du noyau gaussien
+    Permet de calculer la valeur du noyau gaussien,
+    plus la valeur de l'entrée `sigma` sera élevé et plus l'image sera flouter
+    plus cette valeur est élevée, plus le temps de calcul sera long
+*/
 float gaussian(float x, float sigma)
 {
     return (1.0 / (2 * PI * sigma * sigma)) * exp(-(x * x) / (2 * sigma * sigma));
 }
 
-// Fonction pour appliquer un filtre de flou gaussien à une image
+/* Fonction de calcul des nouvelles valeurs des pixel en appliquant le filtre gaussien
+    Paramètres : paramètres de l'image (largeur, hauteur, nombre de canaux de couleur) + sigma pour l'écart type du noyau gaussien
+*/
 void applyGaussianBlur(const uint8_t *inputPixels, uint8_t *outputPixels, int width, int height, int channels, float sigma)
 {
     int radius = (int)(sigma * 3);
@@ -70,6 +76,7 @@ int main()
 {
     int width, height, channels;
     uint8_t *inputPixels = stbi_load("./input.bmp", &width, &height, &channels, 0);
+
     if (!inputPixels)
     {
         printf("Impossible de charger l'image.\n");
