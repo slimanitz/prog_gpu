@@ -84,7 +84,7 @@ int main()
         return 1;
     }
 
-    float sigma = 30.0; // L'écart type du noyau gaussien
+    float sigma = 10.0; // L'écart type du noyau gaussien
 
     // Appliquer le flou gaussien
     applyGaussianBlur(inputPixels, outputPixels, width, height, channels, sigma);

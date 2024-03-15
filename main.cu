@@ -13,7 +13,7 @@
 #define PI 3.14159265358979323846
 
 /*Fonction executable sur GPU
-    Permet de calculer la valeur du noyau gaussien, 
+    Permet de calculer la valeur du noyau gaussien,
     plus la valeur de l'entrée `sigma` sera élevé et plus l'image sera flouter
     plus cette valeur est élevée, plus le temps de calcul sera long
 */
@@ -30,7 +30,8 @@ __global__ void applyGaussianBlur(const uint8_t *inputPixels, uint8_t *outputPix
 {
     int radius = (int)(sigma * 3);
     int size = 2 * radius + 1;
-    float kernel[181];
+
+    float kernel[61];
 
     // construction du noyau de convo gaussien
     float sum = 0;
@@ -45,7 +46,7 @@ __global__ void applyGaussianBlur(const uint8_t *inputPixels, uint8_t *outputPix
         { kernel[0] / sum, kernel[0] / sum, kernel[0] / sum },
         { kernel[1] / sum, kernel[1] / sum, kernel[1] / sum },
         { kernel[2] / sum, kernel[2] / sum, kernel[2] / sum }
-    */  
+    */
     for (int i = 0; i < size; i++)
     {
         kernel[i] /= sum;
@@ -102,19 +103,19 @@ int main()
         return 1;
     }
 
-    float sigma = 30.0; // L'écart type du noyau gaussien
+    float sigma = 10.0; // L'écart type du noyau gaussien
 
-    uint8_t *d_inputPixels, *d_outputPixels; //init des var alloué sur cuda pour calculs des pixels; variable d'entrée + variable de sortie
+    uint8_t *d_inputPixels, *d_outputPixels; // init des var alloué sur cuda pour calculs des pixels; variable d'entrée + variable de sortie
     cudaError_t cudaStatus;
 
     /*Allocation mémoire sur le GPU*/
-    cudaStatus = cudaMalloc((void **)&d_inputPixels, width * height * channels * sizeof(uint8_t)); //tab d_inputPixels => pixels de l'image d'entrée (dans cuda)
+    cudaStatus = cudaMalloc((void **)&d_inputPixels, width * height * channels * sizeof(uint8_t)); // tab d_inputPixels => pixels de l'image d'entrée (dans cuda)
     if (cudaStatus != cudaSuccess)
     {
         fprintf(stderr, "cudaMalloc failed: %s\n", cudaGetErrorString(cudaStatus));
         return 1;
     }
-    cudaStatus = cudaMalloc((void **)&d_outputPixels, width * height * channels * sizeof(uint8_t)); //tab d_outputPixels => pixels de l'image en sortie (de cuda)
+    cudaStatus = cudaMalloc((void **)&d_outputPixels, width * height * channels * sizeof(uint8_t)); // tab d_outputPixels => pixels de l'image en sortie (de cuda)
     if (cudaStatus != cudaSuccess)
     {
         fprintf(stderr, "cudaMalloc failed: %s\n", cudaGetErrorString(cudaStatus));
@@ -132,9 +133,9 @@ int main()
         return 1;
     }
 
-    /*Calcul de la configuration des blocs et des grilles*/ 
-    dim3 threadsPerBlock(16, 16); //nb de thread par bloc
-    dim3 numBlocks((width + threadsPerBlock.x - 1) / threadsPerBlock.x, (height + threadsPerBlock.y - 1) / threadsPerBlock.y); //taille des grilles
+    /*Calcul de la configuration des blocs et des grilles*/
+    dim3 threadsPerBlock(16, 16);                                                                                              // nb de thread par bloc
+    dim3 numBlocks((width + threadsPerBlock.x - 1) / threadsPerBlock.x, (height + threadsPerBlock.y - 1) / threadsPerBlock.y); // taille des grilles
 
     // Appliquer le flou gaussien (appel du kernel cuda)
     applyGaussianBlur<<<numBlocks, threadsPerBlock>>>(d_inputPixels, d_outputPixels, width, height, channels, sigma);
