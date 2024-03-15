@@ -82,6 +82,10 @@ __global__ void applyGaussianBlur(const uint8_t *inputPixels, uint8_t *outputPix
 
 int main()
 {
+    /*Chargement de l'image ("input.bmp") 
+        +stocke ses pixels dans un tab : "inputPixels"
+        +déclaration du tab des nouvelles valeur après filtre : "outpuPixels"
+    */
     int width, height, channels;
     uint8_t *inputPixels = stbi_load("./input.bmp", &width, &height, &channels, 0);
     if (!inputPixels)
@@ -100,16 +104,17 @@ int main()
 
     float sigma = 30.0; // L'écart type du noyau gaussien
 
-    uint8_t *d_inputPixels, *d_outputPixels;
+    uint8_t *d_inputPixels, *d_outputPixels; //init des var alloué sur cuda pour calculs des pixels; variable d'entrée + variable de sortie
     cudaError_t cudaStatus;
 
+    //tab d_inputPixels => pixels de l'image d'entrée (dans cuda)
     cudaStatus = cudaMalloc((void **)&d_inputPixels, width * height * channels * sizeof(uint8_t));
     if (cudaStatus != cudaSuccess)
     {
         fprintf(stderr, "cudaMalloc failed: %s\n", cudaGetErrorString(cudaStatus));
         return 1;
     }
-
+    //tab d_outputPixels => pixels de l'image en sortie (de cuda)
     cudaStatus = cudaMalloc((void **)&d_outputPixels, width * height * channels * sizeof(uint8_t));
     if (cudaStatus != cudaSuccess)
     {
@@ -146,7 +151,7 @@ int main()
 
     // Print some output pixel values for verification
 
-    // Enregistrer l'image floutée
+    // enregistrement de l'image floutée
     stbi_write_bmp("output.bmp", width, height, channels, outputPixels);
 
     // Libérer la mémoire
